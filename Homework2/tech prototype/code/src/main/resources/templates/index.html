@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Issuer Details</title>
+<!--    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">-->
+    <style>
+        /* General body styling */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* Container styling */
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        /* Header styling */
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        /* Form styling */
+        form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        form label {
+            flex: 1 1 100%;
+            font-weight: bold;
+            color: #555;
+        }
+
+        form select, form input, form button {
+            flex: 1 1 48%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        form button {
+            background-color: #007bff;
+            color: #ffffff;
+            border: none;
+            cursor: pointer;
+        }
+
+        form button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Table styling */
+        .table-container {
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #343a40;
+            color: #ffffff;
+            text-transform: uppercase;
+        }
+
+        td {
+            background-color: #f9f9f9;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        table tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            form label, form select, form input, form button {
+                flex: 1 1 100%;
+            }
+        }
+
+    </style>
+</head>
+<body>
+<div class="container">
+<!--    <h1 class="header"> <span th:text="${issuerCode}"></span></h1>-->
+    <!-- Display issuer code -->
+
+    <!-- Date filter form -->
+<!--    <div class="form-container">-->
+<!--        <form th:action="@{/issuers/filter}" method="get" class="row g-3">-->
+<!--            <div class="col-md-4">-->
+<!--                <label for="dateFrom" class="form-label">Од:</label>-->
+<!--                <input id="dateFrom" type="date" class="form-control" required>-->
+<!--            </div>-->
+<!--            <div class="col-md-4">-->
+<!--                <label for="dateTo" class="form-label">До:</label>-->
+<!--                <input id="dateTo" type="date" class="form-control" required>-->
+<!--            </div>-->
+<!--            <div class="col-md-2 align-self-end">-->
+<!--                <button type="submit" class="btn btn-primary w-100">Прикажи</button>-->
+<!--            </div>-->
+<!--            <div class="col-md-2 align-self-end">-->
+<!--                <button type="button" id="downloadBtn" class="btn btn-success w-100">Превземи податоци</button>-->
+<!--            </div>-->
+<!--        </form>-->
+<!--    </div>-->
+
+    <form action="/submit" method="post">
+        <label for="code-select">Select a Code:</label>
+        <select id="code-select" name="code">
+            <option value="">-- Select Code --</option>
+            <option th:each="code : ${codes}" th:value="${code}" th:text="${code}"></option>
+        </select>
+        <label for="from-time">From:</label>
+        <input type="date" id="from-time" name="from" required>
+
+        <label for="to-time">To:</label>
+        <input type="date" id="to-time" name="to" required>
+        <button type="submit">Submit</button>
+    </form>
+    <!-- Issuer data table -->
+    <div class="table-container">
+        <table id="issuerTable" class="table table-bordered table-hover table-striped">
+            <thead class="table-dark">
+            <tr id="marija">
+                <th>Датум</th>
+                <th>Цена на последна трансакција</th>
+                <th>Мак.</th>
+                <th>Мин.</th>
+                <th>Просечна цена</th>
+                <th>%пром.</th>
+                <th>Количина</th>
+                <th>Промет во БЕСТ во денари</th>
+                <th>Вкупен промет во денари</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="issuer : ${issuers}">
+                <td th:text="${issuer.date}"></td>
+                <td th:text="${issuer.lastTradePrice}"></td>
+                <td th:text="${issuer.max}"></td>
+                <td th:text="${issuer.min}"></td> <!-- Customize based on available fields -->
+                <td th:text="${issuer.avgPrice}"></td>
+                <td th:text="${issuer.percentageChange}"></td>
+                <td th:text="${issuer.volume}"></td>
+                <td th:text="${issuer.turnoverBest}"></td>
+                <td th:text="${issuer.totalTurnover}"></td>
+
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div th:if="${issuers == null or issuers.isEmpty()}">
+        <p>No issuers found for the specified criteria.</p>
+    </div>
+</div>
+
+<!--<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>-->
+<script>
+
+    function formatDateToDDMMYYYY(date) {
+        const [year, month, day] = date.split("-");
+        return `${day}.${month}.${year}`;
+    }
+
+    document.getElementById('dateFrom').addEventListener('change', function () {
+        const formattedDate = formatDateToDDMMYYYY(this.value);
+        this.setAttribute('data-formatted-value', formattedDate); // Store formatted value
+    });
+
+    document.getElementById('dateTo').addEventListener('change', function () {
+        const formattedDate = formatDateToDDMMYYYY(this.value);
+        this.setAttribute('data-formatted-value', formattedDate); // Store formatted value
+    });
+
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function (event) {
+        const dateFromInput = document.getElementById('dateFrom');
+        const dateToInput = document.getElementById('dateTo');
+
+        dateFromInput.name = '';
+        dateToInput.name = '';
+
+        const hiddenDateFrom = document.createElement('input');
+        hiddenDateFrom.type = 'hidden';
+        hiddenDateFrom.name = 'dateFrom';
+        hiddenDateFrom.value = dateFromInput.getAttribute('data-formatted-value');
+        form.appendChild(hiddenDateFrom);
+
+        const hiddenDateTo = document.createElement('input');
+        hiddenDateTo.type = 'hidden';
+        hiddenDateTo.name = 'dateTo';
+        hiddenDateTo.value = dateToInput.getAttribute('data-formatted-value');
+        form.appendChild(hiddenDateTo);
+    });
+
+
+    document.getElementById('downloadBtn').addEventListener('click', function () {
+        const table = document.getElementById('issuerTable');
+        const tableHTML = table.outerHTML;
+        const blob = new Blob([tableHTML], {type: 'text/html'});
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'IssuerTable.html';
+        a.click();
+
+        URL.revokeObjectURL(url);
+    });
+
+
+</script>
+</body>
+</html>
